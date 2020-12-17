@@ -1,4 +1,5 @@
 #!groovy
+
 /*
 ======================================
 Author:DevOps
@@ -9,19 +10,31 @@ Purpose: To build frontend java project
 
 pipeline {
     agent {
+
+// which node you want to run this pipeline - master or slave Jenkins
         label 'master'
     }
 
     tools {
+// Declare the tools used in this pipeline project
         maven 'mymaven'
         jdk 'java11'
     }
 
     stages {
+        stage ('Code Checkout') {
+            steps {
+                git credentialsId: 'rajarajandayalan', url: 'https://github.com/rajarajandayalan/addressbook.git'
+            }
+        }
+
         stage ('Code Validate') {
             steps {
-                scripts {
-                    sh """
+                script {
+
+// bat or powershell for windows instead of sh
+
+                    sh """    
 
                 mvn validate
                 
@@ -32,7 +45,8 @@ pipeline {
 
         stage ('Code Compile') {
             steps {
-                scripts {
+                script {
+
                     sh """
 
                 mvn compile
@@ -44,7 +58,8 @@ pipeline {
 
         stage ('Code Test') {
             steps {
-                scripts {
+                script {
+
                     sh """
 
                 mvn test
@@ -56,7 +71,7 @@ pipeline {
 
         stage ('Code Package') {
             steps {
-                scripts {
+                script {
                     sh """
 
                 mvn package
@@ -68,7 +83,7 @@ pipeline {
 
         stage ('Code Zip') {
             steps {
-                scripts {
+                script {
                     sh """
                 cd "${env.WORKSPACE}/target/"
                 zip FrontEnd.zip addressbook-2.0.war
@@ -79,19 +94,14 @@ pipeline {
         }
 
     }
-}
+    post{
 
-/* Clean the work space */
+        always{
 
-post{
+            dir("${env.WORKSPACE}@tmp"){
+                deleteDir()
+            }
 
-    always{
-
-        dir("${env.WORKSPACE}@tmp"){
-            deleteDir()
         }
-
     }
 }
-
-
